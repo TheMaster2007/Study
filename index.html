@@ -5,6 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Study Tracker</title>
   <style>
+    /* Basic styles for graph container */
+.graph-container {
+  width: 40%;  /* Adjust width for larger screens */
+  height: 400px;
+  float: right;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+/* Adjust styles for mobile devices */
+@media (max-width: 768px) {
+  /* For devices with width less than or equal to 768px (Tablets, Small Desktops) */
+  
+  .graph-container {
+    width: 80%;  /* Make the graph 80% of the screen width */
+    height: 300px;  /* Slightly smaller graph for mobile */
+    margin: 10px auto;  /* Center the graph */
+  }
+
+  /* Adjust text size for better readability */
+  .welcome-message {
+    font-size: 18px;  /* Slightly smaller text */
+  }
+
+  /* Ensure buttons are aligned properly on smaller screens */
+  .btn {
+    width: 100%;  /* Make buttons fill the screen on mobile */
+    margin: 10px 0;
+  }
+
+  /* Reduce font size for quote on mobile */
+  .quote {
+    font-size: 14px;
+    text-align: center;
+    padding: 10px;
+  }
+}
+
+/* For extra small screens (phones) */
+@media (max-width: 480px) {
+  /* For phones with small screens */
+  
+  .graph-container {
+    width: 90%;  /* Make the graph even smaller on very small screens */
+    height: 250px;
+  }
+
+  /* Further reduce font size for small phones */
+  .welcome-message {
+    font-size: 16px;  /* Smaller font size on mobile */
+  }
+
+  .quote {
+    font-size: 12px;  /* Smaller quote text */
+  }
+}
     body {
       font-family: Arial, sans-serif;
       margin: 0;
