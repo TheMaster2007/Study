@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: relative;
+    }
+    .dark-mode {
+      background-color: #121212;
+      color: #fff;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100%;
+      position: relative;
+      padding: 20px;
+    }
+    .left-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      margin-right: 40vw; /* Add margin to prevent overlap */
+    }
+    .right-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40vw; /* Adjusted width for the graph to 2/5 of the screen */
+      height: 50vh; /* Adjusted height for the graph */
+    }
+    .input-section {
+      margin-top: 80px;
+    }
+    .input-section input {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    .clear-history {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      cursor: pointer;
+      padding: 10px;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .theme-toggle {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      cursor: pointer;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    .quote {
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      font-style: italic;
+      color: #007bff;
+      text-align: center;
+    }
+    .username {
+      font-size: 24px;
+      cursor: pointer;
+      color: #007bff;
+    }
+    .username span {
+      color: black; /* Make the (edit) text black */
+    }
+  </style>
+</head>
+<body>
+  <div class="left-panel">
+    <div class="header">
+      <h1 id="username" class="username" onclick="changeUsername()">Welcome User <span>(edit)</span></h1>
+    </div>
+    <div class="input-section">
+      <label for="study-hours">Enter Study Hours:</label>
+      <input type="date" id="study-date" />
+      <input type="number" id="study-hours" placeholder="Hours" min="0" />
+      <button onclick="addData()">Add Data</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <canvas id="studyChart"></canvas>
+  </div>
+
+  <div class="quote">
+    "The harder you work for something, the greater you'll feel when you achieve it."
+  </div>
+
+  <button class="clear-history" onclick="clearHistory()">Clear History</button>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Load data from localStorage
+    let chartData = JSON.parse(localStorage.getItem('chartData')) || {
+      labels: [],
+      datasets: [{
+        label: 'Study Hours',
+        data: [],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderWidth: 1
+      }]
+    };
+
+    const ctx = document.getElementById('studyChart').getContext('2d');
+    const studyChart = new Chart(ctx, {
+      type: 'line',
+      data: chartData,
+      options: {
+        scales: {
+          x: {
+            type: 'category',
+            title: {
+              display: true,
+              text: 'Date'
+            },
+            ticks: {
+              maxRotation: 45, // To make the date labels more readable
+            },
+            min: 0,
+            max: function() {
+              return chartData.labels.length;
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Study Hours'
+            },
+            suggestedMin: 0, // Ensure the Y-axis always includes 0
+            suggestedMax: 10, // Increase the range of the Y-axis
+          }
+        }
+      }
+    });
+
+    function addData() {
+      const date = document.getElementById('study-date').value;
+      const hours = document.getElementById('study-hours').value;
+
+      if (date && hours) {
+        // Check if the data for the selected date already exists
+        const existingIndex = chartData.labels.indexOf(date);
+
+        if (existingIndex === -1) {
+          chartData.labels.push(date);
+          chartData.datasets[0].data.push(hours);
+
+          // Sort the data by date (increasing order)
+          const sortedData = chartData.labels.map((label, index) => ({
+            label,
+            data: chartData.datasets[0].data[index]
+          })).sort((a, b) => new Date(a.label) - new Date(b.label));
+
+          // Update the chart data after sorting
+          chartData.labels = sortedData.map(item => item.label);
+          chartData.datasets[0].data = sortedData.map(item => item.data);
+
+          // Save to localStorage
+          localStorage.setItem('chartData', JSON.stringify(chartData));
+
+          // Update the chart
+          studyChart.update();
+        } else {
+          alert("Data for this date already exists! Please choose another date.");
+        }
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function clearHistory() {
+      const confirmation = confirm("Are you sure you want to clear the history?");
+      if (confirmation) {
+        chartData.labels = [];
+        chartData.datasets[0].data = [];
+        localStorage.removeItem('chartData'); // Remove from localStorage
+        studyChart.update();
+      }
+    }
+
+    function changeUsername() {
+      const currentName = document.getElementById('username').innerText.replace(" (edit)", "");
+      const newName = prompt("Enter your name:", currentName);
+      if (newName) {
+        document.getElementById('username').innerText = "Welcome " + newName + " (edit)";
+      }
+    }
+  </script>
+</body>
+</html>
